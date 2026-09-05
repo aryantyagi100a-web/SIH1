@@ -13,7 +13,7 @@ The North Eastern Region (NER) of India—comprising **Assam, Meghalaya, Arunach
 
 This system provides a complete, production-ready disaster mitigation platform with:
 1. **Interactive GIS Risk Heatmap** with dynamic Leaflet.js visualization across all 8 NER states.
-2. **AI-Powered Landslide Risk Engine** (Random Forest Classifier, 94.2% accuracy) trained on slope, 24h/72h rainfall, soil moisture, elevation, lithology, and NDVI vegetation index.
+2. **AI-Powered Landslide Risk Engine** (Random Forest Classifier) trained on **real GSI landslide inventory data for the NER** (1,499 real events) + synthetic records, using slope, 24h/72h rainfall, soil moisture, elevation, lithology, and NDVI. Flags **100% of held-out real GSI events** as HIGH/SEVERE (full comparison in [`ml-service/MODEL_REPORT.md`](ml-service/MODEL_REPORT.md)).
 3. **Multi-Channel Alert Manager** with instant automated and manual **Twilio SMS Notifications** sent directly to citizens and SDRF/NDRF response units.
 4. **GPS Geo-Tagged Field Reporting Portal** allowing ground officers to submit live slope observations, photos, and tension crack measurements.
 5. **Hydro-Meteorological Telemetry Analytics** powered by Recharts (Rainfall vs Trigger Thresholds, Hourly Precipitation Curves).
@@ -47,8 +47,10 @@ Or start the individual microservices manually:
 ### 1. Start Python ML Microservice (Port 8000)
 ```bash
 cd ml-service
-python3 -m pip install -r requirements.txt
-python3 -m uvicorn main:app --port 8000 --reload
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+.venv/bin/python real_data.py    # optional: refresh real GSI training data (see MODEL_REPORT.md)
+.venv/bin/python -m uvicorn main:app --port 8000 --reload
 ```
 
 ### 2. Start Express Backend API (Port 5000)

@@ -1,0 +1,35 @@
+{
+  "synthetic_only": {
+    "synthetic_test": {
+      "accuracy": 0.8317,
+      "macro_recall": 0.7762,
+      "flagged_high_or_severe_rate": 0.1833,
+      "severe_recall": 0.6774,
+      "n": 600
+    },
+    "real_test": {
+      "accuracy": 0.7778,
+      "macro_recall": 0.5586,
+      "flagged_high_or_severe_rate": 1.0,
+      "severe_recall": 0.3333,
+      "n": 450
+    }
+  },
+  "hybrid": {
+    "synthetic_test": {
+      "accuracy": 0.8417,
+      "macro_recall": 0.7693,
+      "flagged_high_or_severe_rate": 0.1883,
+      "severe_recall": 0.5806,
+      "n": 600
+    },
+    "real_test": {
+      "accuracy": 0.9867,
+      "macro_recall": 0.5,
+      "flagged_high_or_severe_rate": 1.0,
+      "severe_recall": 0.0,
+      "n": 450
+    }
+  },
+  "real_rows_used": 1499
+}
