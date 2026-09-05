@@ -21,6 +21,22 @@ This system provides a complete, production-ready disaster mitigation platform w
 
 ---
 
+## 🏛️ Who This Solves It For — The NER Ecosystem
+
+**Problem statement SIH 26001 belongs to the Ministry of Development of North Eastern Region (MDoNER)** — the ministry responsible for development across all 8 NER states. Their goal: use technology to make the region disaster-resilient *before* a landslide, not after.
+
+This system is designed to sit inside the existing government data ecosystem:
+
+| Agency | Role in this system |
+|---|---|
+| **MDoNER** | Problem owner — coordinates the 8 states and funds NEC |
+| **State SDMAs + NDRF/SDRF** | Receive alerts and act (evacuation, road closure) |
+| **NESAC / ISRO-NRSC** (Shillong) | Space-tech arm for the NER — satellite imagery, DEM/slope, landslide atlas, Bhuvan GIS. Source for real `slope`/`ndvi` in production |
+| **GSI** (Geological Survey of India) | Geology + real landslide inventory — what the AI model is trained on |
+| **IMD / Open-Meteo** | Rainfall — live 24h/72h accumulations feed the risk model |
+
+**How the flow works:** IMD/Open-Meteo rainfall + GSI geology + (in production) NESAC satellite terrain data → the AI model scores each station → red/orange alerts reach district administrations and citizens by SMS, so authorities act *before* slopes fail.
+
 ## 🛠️ Tech Stack
 - **Frontend**: React.js (Vite) + Tailwind CSS + Leaflet.js + Recharts + Lucide Icons + PWA Manifest *(Hosted on Vercel)*
 - **Backend API**: Node.js + Express.js + Prisma ORM + PostgreSQL / SQLite fallback
