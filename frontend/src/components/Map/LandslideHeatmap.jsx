@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Circle, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { Send, ChevronUp, ChevronDown, X, Info } from 'lucide-react';
+import { Send, ChevronUp, ChevronDown, X, Info, RefreshCw, FlaskConical } from 'lucide-react';
 import { fetchRiskHeatmap, triggerSMSBroadcast } from '../../services/api';
 import { useLanguage } from '../../context/LanguageContext';
 import { NER_BOUNDS } from '../../data/nerStateBoundaries';
@@ -17,6 +17,9 @@ const STATE_COORDS = {
   Mizoram: { center: [23.5, 92.8], zoom: 8.5 },
   Tripura: { center: [23.8, 91.5], zoom: 9 }
 };
+
+// Turn a UTC timestamp (like "2026-09-05T15:30:00.000Z") into a simple "9:05 PM" clock string.
+const formatClock = (iso) => iso ? new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—';
 
 const createGlowPinIcon = (level) => {
   const isCritical = level === 3;
@@ -57,22 +60,45 @@ export default function LandslideHeatmap() {
   const { t } = useLanguage();
   const [stations, setStations] = useState([]);
   const [selectedState, setSelectedState] = useState('All');
+  // dataMode: 'live' uses REAL Open-Meteo rainfall • 'simulate' is the demo surge
+  const [dataMode, setDataMode] = useState('live');
   const [rainfallMult, setRainfallMult] = useState(1.0);
+  const [dataSource, setDataSource] = useState('');
+  const [fetchedAt, setFetchedAt] = useState(null);
+  const [refreshCount, setRefreshCount] = useState(0); // +1 each time the user taps Refresh
   const [mapCenter, setMapCenter] = useState([25.8, 92.2]);
   const [mapZoom, setMapZoom] = useState(7);
   const [selectedStation, setSelectedStation] = useState(null);
   const [smsStatus, setSmsStatus] = useState(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
+  // Fetch the risk map again whenever the mode, the surge slider, or Refresh changes.
   useEffect(() => {
-    fetchRiskHeatmap(rainfallMult).then((data) => {
+    let cancelled = false;
+    fetchRiskHeatmap(dataMode, rainfallMult).then((data) => {
+      if (cancelled) return;
       const list = data.stations || [];
       setStations(list);
-      if (!selectedStation && list.length > 0) {
-        setSelectedStation(list.reduce((max, s) => s.risk_score_percentage > max.risk_score_percentage ? s : max, list[0]));
-      }
+      setDataSource(data.data_source || '');
+      setFetchedAt(data.fetched_at || null);
+      // Keep the open station panel showing fresh numbers after a refresh.
+      setSelectedStation((prev) => {
+        if (!prev) return list.length ? list.reduce((max, s) => s.risk_score_percentage > max.risk_score_percentage ? s : max, list[0]) : null;
+        return list.find((s) => s.station_id === prev.station_id) || prev;
+      });
     });
-  }, [rainfallMult]);
+    return () => { cancelled = true; };
+  }, [dataMode, rainfallMult, refreshCount]);
+
+  // In live mode, re-check the real forecast every 5 minutes automatically.
+  useEffect(() => {
+    if (dataMode !== 'live') return;
+    const timer = setInterval(() => setRefreshCount((n) => n + 1), 5 * 60 * 1000);
+    return () => clearInterval(timer);
+  }, [dataMode]);
+
+  // True when the backend could not reach Open-Meteo and used its baseline instead.
+  const isFallback = dataSource === 'SEED_FALLBACK' || dataSource === 'PARTIAL_OPEN_METEO';
 
   const handleStateChange = (name) => {
     setSelectedState(name);
@@ -174,24 +200,74 @@ export default function LandslideHeatmap() {
           })}
         </MapContainer>
 
-        {/* Precipitation Surge Slider (Touch-friendly track) */}
-        <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-[990] glass-panel px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-xl sm:rounded-2xl w-[200px] sm:w-64 text-fluid-xs border border-neutral-800 shadow-xl">
-          <div className="flex items-center justify-between text-neutral-300 mb-1">
-            <span className="font-mono text-[9px] sm:text-[10px] tracking-wider uppercase truncate">RAIN SURGE</span>
-            <span className="font-mono text-white font-bold text-fluid-xs">{rainfallMult}x MONSOON</span>
+        {/* Data Source Panel — LIVE Open-Meteo rainfall by default, demo surge optional */}
+        <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-[990] glass-panel px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-xl sm:rounded-2xl w-[220px] sm:w-64 text-fluid-xs border border-neutral-800 shadow-xl">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center space-x-1.5 min-w-0">
+              {/* Pulsing dot: green = real data, amber = demo simulation */}
+              <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dataMode === 'live' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+              <span className="font-mono text-[9px] sm:text-[10px] tracking-wider uppercase text-neutral-300 truncate">
+                {dataMode === 'live' ? 'Live Rain Nowcast' : 'Surge Simulation'}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setRefreshCount((n) => n + 1)}
+              className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors flex items-center justify-center touch-target"
+              aria-label="Refresh rainfall data"
+              title="Refresh rainfall data"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+            </button>
           </div>
-          <input 
-            type="range" 
-            min="0.5" 
-            max="2.5" 
-            step="0.25" 
-            value={rainfallMult} 
-            onChange={(e) => setRainfallMult(parseFloat(e.target.value))} 
-            className="w-full h-2.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-white touch-target" 
-          />
-          <div className="flex justify-between text-[8px] sm:text-[10px] text-neutral-500 font-mono mt-1">
-            <span>0.5x Base</span>
-            <span>2.5x Cloudburst</span>
+
+          <div className="font-mono text-[9px] sm:text-[10px] text-neutral-400 leading-relaxed">
+            {dataMode === 'live' ? (
+              <>
+                <div className={isFallback ? 'text-amber-400' : 'text-emerald-400'}>
+                  {isFallback ? 'Live — using fallback baseline' : 'Real 24h/72h rain + AI risk'}
+                </div>
+                <div>Updated {fetchedAt ? formatClock(fetchedAt) : '…'}</div>
+              </>
+            ) : (
+              <div className="text-amber-400">Artificial rainfall — demo only</div>
+            )}
+          </div>
+
+          {/* One-tap switch between real data and the demo surge mode */}
+          <div className="mt-2 pt-2 border-t border-neutral-800">
+            <button
+              type="button"
+              onClick={() => setDataMode(dataMode === 'live' ? 'simulate' : 'live')}
+              className={`w-full py-1.5 min-h-[36px] rounded-lg flex items-center justify-center space-x-1.5 text-[9px] sm:text-[10px] font-mono font-bold transition-colors ${
+                dataMode === 'live'
+                  ? 'bg-neutral-900 text-neutral-300 hover:bg-neutral-800 border border-neutral-700'
+                  : 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+              }`}
+            >
+              <FlaskConical className="w-3.5 h-3.5" />
+              <span>{dataMode === 'live' ? 'Demo: Simulate Monsoon Surge' : 'Switch Back to Live Data'}</span>
+            </button>
+
+            {/* Surge slider is only shown while simulating (demo mode) */}
+            {dataMode === 'simulate' && (
+              <div className="mt-2">
+                <input 
+                  type="range" 
+                  min="0.5" 
+                  max="2.5" 
+                  step="0.25" 
+                  value={rainfallMult} 
+                  onChange={(e) => setRainfallMult(parseFloat(e.target.value))} 
+                  className="w-full h-2.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-amber-400 touch-target" 
+                />
+                <div className="flex justify-between text-[8px] sm:text-[10px] text-neutral-500 font-mono mt-1">
+                  <span>0.5x Base</span>
+                  <span>{rainfallMult}x</span>
+                  <span>2.5x Cloudburst</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

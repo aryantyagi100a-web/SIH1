@@ -26,9 +26,14 @@ This system provides a complete, production-ready disaster mitigation platform w
 - **Backend API**: Node.js + Express.js + Prisma ORM + PostgreSQL / SQLite fallback
 - **ML Microservice**: Python + FastAPI + Scikit-Learn (Random Forest) + Pandas + NumPy + Joblib
 - **Notification Gateway**: Twilio SMS API (with intelligent simulation mode fallback)
-- **Meteorological Data**: OpenWeatherMap API + IMD regional hydro-telemetry grid
+- **Rainfall Feed**: Open-Meteo real-time nowcast (no API key) — live 24h/72h accumulations per station feed the AI risk model; a clearly-labelled demo mode simulates monsoon surges
 
 ---
+
+## 🌧️ Live Rainfall vs Demo Mode
+- **Live (default):** The GIS risk map fetches **real rainfall** for every monitoring station from the [Open-Meteo](https://open-meteo.com/) forecast API, computes rolling 24h/72h accumulations, and runs each station through the AI risk model. The map refreshes automatically every 5 minutes (or on demand via the refresh button).
+- **Demo:** A *"Demo: Simulate Monsoon Surge"* button on the map switches to artificial rainfall (×0.5–×2.5 multiplier) so the red/orange alert demo can be shown on any day of the year. Simulated data is always labelled as such in the UI.
+- **Backend API:** `/api/risk/heatmap-points?mode=live` (real data, default) or `/api/risk/heatmap-points?mode=simulate&multiplier=2.0` (demo).
 
 ## 🚀 Quick Start
 Run the launch script to start all services simultaneously:

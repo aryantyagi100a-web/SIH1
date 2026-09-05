@@ -4,7 +4,12 @@ const { predictRisk, getNERHeatmapPoints } = require('../services/mlClient');
 
 router.get('/heatmap-points', async (req, res) => {
   try {
-    const data = await getNERHeatmapPoints(req.query.multiplier ? parseFloat(req.query.multiplier) : 1.0);
+    // Default mode is LIVE: real Open-Meteo nowcast rainfall drives the risk map.
+    // mode=simulate&multiplier=x keeps the monsoon-surge demo path available.
+    const mode = req.query.mode === 'simulate' ? 'simulate' : 'live';
+    const rawMultiplier = req.query.multiplier ? parseFloat(req.query.multiplier) : 1.0;
+    const multiplier = Number.isFinite(rawMultiplier) ? Math.min(2.5, Math.max(0.5, rawMultiplier)) : 1.0;
+    const data = await getNERHeatmapPoints({ mode, multiplier });
     res.json({ success: true, ...data });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

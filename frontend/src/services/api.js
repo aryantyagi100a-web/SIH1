@@ -18,15 +18,19 @@ const FALLBACK_STATIONS = [
   { station_id: "NER-TRIP-01", name: "Jampui Hills - North Tripura", state: "Tripura", district: "North Tripura", lat: 23.9500, lng: 92.2667, elevation_m: 930, slope_deg: 24.5, soil_type: "Sandy Clay Loam", current_rainfall_24h_mm: 40.0, current_rainfall_72h_mm: 82.0, soil_moisture: 0.42, risk_level: 0, risk_code: "LOW", risk_label: "LOW (Normal)", risk_score_percentage: 22.5, color: "#10B981", recommended_action: "🟢 GREEN (SAFE): Normal conditions." }
 ];
 
-export const fetchRiskHeatmap = async (multiplier = 1.0) => {
+export const fetchRiskHeatmap = async (mode = 'live', multiplier = 1.0) => {
   try {
-    return (await client.get(`/risk/heatmap-points?multiplier=${multiplier}`)).data;
+    const params = mode === 'simulate' ? `mode=simulate&multiplier=${multiplier}` : 'mode=live';
+    return (await client.get(`/risk/heatmap-points?${params}`)).data;
   } catch {
     return {
       region: "North Eastern Region (NER) India",
       station_count: FALLBACK_STATIONS.length,
-      rainfall_simulation_multiplier: multiplier,
-      stations: FALLBACK_STATIONS.map(s => ({ ...s, current_rainfall_24h_mm: Math.round(s.current_rainfall_24h_mm * multiplier * 10) / 10 }))
+      data_source: 'OFFLINE_SNAPSHOT',
+      mode,
+      stations: mode === 'simulate'
+        ? FALLBACK_STATIONS.map(s => ({ ...s, current_rainfall_24h_mm: Math.round(s.current_rainfall_24h_mm * multiplier * 10) / 10, current_rainfall_72h_mm: Math.round(s.current_rainfall_72h_mm * multiplier * 10) / 10 }))
+        : FALLBACK_STATIONS
     };
   }
 };
