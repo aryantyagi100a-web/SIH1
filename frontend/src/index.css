@@ -168,7 +168,55 @@ input[type=range] {
 
 html, body {
   min-height: 100%;
-  min-height: 100dvh;
+  min-height: 100dvh; /* dvh = dynamic viewport height; adapts correctly as mobile browser chrome expands/collapses */
   overscroll-behavior-y: none;
 }
+
+/* ==========================================================================
+   BEGINNER-FRIENDLY UTILITY CLASSES FOR RESPONSIVENESS & TOUCH TARGETS
+   ==========================================================================
+   clamp(min, preferred, max) creates FLUID TYPOGRAPHY:
+   - min: Minimum font size (won't shrink below this on small 320px screens)
+   - preferred: Relative size based on viewport width (vw) so text scales smoothly
+   - max: Maximum font size (won't grow excessively on wide 1440px desktop screens)
+   ========================================================================== */
+
+/* Fluid text size scale */
+.text-fluid-xs {
+  font-size: clamp(0.7rem, 0.65rem + 0.25vw, 0.8rem); /* ~11px - 13px */
+}
+
+.text-fluid-sm {
+  font-size: clamp(0.8rem, 0.75rem + 0.3vw, 0.925rem); /* ~13px - 15px */
+}
+
+.text-fluid-base {
+  font-size: clamp(0.9rem, 0.85rem + 0.4vw, 1.05rem); /* ~14.5px - 17px */
+}
+
+.text-fluid-lg {
+  font-size: clamp(1.05rem, 0.95rem + 0.6vw, 1.35rem); /* ~17px - 21.5px */
+}
+
+.text-fluid-xl {
+  font-size: clamp(1.25rem, 1.1rem + 1vw, 1.8rem); /* ~20px - 29px */
+}
+
+.text-fluid-2xl {
+  font-size: clamp(1.6rem, 1.3rem + 1.6vw, 2.5rem); /* ~25.5px - 40px */
+}
+
+/* 
+   Mobile Touch Target Standard:
+   Apple & Google design guidelines require interactive elements (buttons, inputs, toggles)
+   to have a minimum hit area of 44px x 44px to prevent accidental missed taps on touch screens.
+*/
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 

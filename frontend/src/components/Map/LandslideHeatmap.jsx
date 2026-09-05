@@ -111,16 +111,21 @@ export default function LandslideHeatmap() {
   const filtered = selectedState === 'All' ? stations : stations.filter(s => s.state === selectedState);
 
   return (
+    /* 
+      Map Viewport Container:
+      - 100dvh (dynamic viewport height) ensures full height on mobile browsers without content cut-off.
+      - Relative positioning holds absolute control overlays (state filter, station sheet, slider).
+    */
     <div className="relative h-[calc(100dvh-7.5rem)] md:h-[calc(100vh-5.5rem)] flex flex-col justify-between select-none bg-black">
       {/* Top Filter Bar */}
       <div className="z-20 flex flex-col md:flex-row md:items-center justify-between gap-2 mb-2 px-0.5">
-        {/* State Pills - Smooth Horizontal Scroll */}
+        {/* State Pills - Smooth Horizontal Scroll with 44px touch target heights */}
         <div className="flex items-center space-x-1.5 overflow-x-auto no-scrollbar pb-1 max-w-full">
           {Object.keys(STATE_COORDS).map((st) => (
             <button
               key={st}
               onClick={() => handleStateChange(st)}
-              className={`px-3 py-1 rounded-full text-[11px] sm:text-xs transition-all whitespace-nowrap flex-shrink-0 ${
+              className={`px-3.5 py-2 min-h-[44px] rounded-full text-fluid-xs transition-all whitespace-nowrap flex-shrink-0 flex items-center justify-center ${
                 selectedState === st
                   ? 'bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.2)]'
                   : 'bg-neutral-900 text-neutral-400 hover:text-white hover:bg-neutral-800 border border-neutral-800'
@@ -132,7 +137,7 @@ export default function LandslideHeatmap() {
         </div>
 
         {/* Live Counters */}
-        <div className="flex items-center space-x-3 sm:space-x-4 text-[10px] sm:text-xs font-mono text-neutral-400 overflow-x-auto no-scrollbar flex-shrink-0">
+        <div className="flex items-center space-x-3 sm:space-x-4 text-fluid-xs font-mono text-neutral-400 overflow-x-auto no-scrollbar flex-shrink-0">
           {[
             { color: '#ef4444', count: counts.crit, label: 'CRITICAL' },
             { color: '#f59e0b', count: counts.warn, label: 'WARNING' },
@@ -169,11 +174,11 @@ export default function LandslideHeatmap() {
           })}
         </MapContainer>
 
-        {/* Precipitation Surge Slider (Adaptive on mobile) */}
-        <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-[990] glass-panel px-3 py-2 sm:px-4 sm:py-3 rounded-xl sm:rounded-2xl w-[190px] sm:w-64 text-xs border border-neutral-800 shadow-xl">
+        {/* Precipitation Surge Slider (Touch-friendly track) */}
+        <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-[990] glass-panel px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-xl sm:rounded-2xl w-[200px] sm:w-64 text-fluid-xs border border-neutral-800 shadow-xl">
           <div className="flex items-center justify-between text-neutral-300 mb-1">
             <span className="font-mono text-[9px] sm:text-[10px] tracking-wider uppercase truncate">RAIN SURGE</span>
-            <span className="font-mono text-white font-bold text-[10px] sm:text-xs">{rainfallMult}x MONSOON</span>
+            <span className="font-mono text-white font-bold text-fluid-xs">{rainfallMult}x MONSOON</span>
           </div>
           <input 
             type="range" 
@@ -182,20 +187,20 @@ export default function LandslideHeatmap() {
             step="0.25" 
             value={rainfallMult} 
             onChange={(e) => setRainfallMult(parseFloat(e.target.value))} 
-            className="w-full h-1 bg-neutral-800 rounded appearance-none cursor-pointer accent-white" 
+            className="w-full h-2.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-white touch-target" 
           />
-          <div className="flex justify-between text-[8px] sm:text-[10px] text-neutral-500 font-mono mt-0.5">
+          <div className="flex justify-between text-[8px] sm:text-[10px] text-neutral-500 font-mono mt-1">
             <span>0.5x Base</span>
             <span>2.5x Cloudburst</span>
           </div>
         </div>
 
-        {/* Mobile Station Quick Trigger Bar (Shown on mobile when station is selected but drawer collapsed) */}
+        {/* Mobile Station Quick Trigger Bar (Tap opens details bottom sheet) */}
         {selectedStation && (
           <div className="lg:hidden absolute top-3 left-3 right-3 z-[990]">
             <div 
               onClick={() => setMobileDrawerOpen(true)}
-              className="glass-panel p-2.5 rounded-xl border border-neutral-800 flex items-center justify-between cursor-pointer active:scale-[0.99] transition-transform shadow-xl bg-black/90"
+              className="glass-panel p-3 rounded-xl border border-neutral-800 flex items-center justify-between cursor-pointer active:scale-[0.99] transition-transform shadow-xl bg-black/90 min-h-[44px]"
             >
               <div className="flex items-center space-x-2 truncate">
                 <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
@@ -203,29 +208,29 @@ export default function LandslideHeatmap() {
                   selectedStation.risk_level === 2 ? 'bg-amber-500' : 'bg-emerald-500'
                 }`} />
                 <div className="truncate">
-                  <span className="text-white font-bold text-xs truncate block">{selectedStation.name}</span>
+                  <span className="text-white font-bold text-fluid-xs truncate block">{selectedStation.name}</span>
                   <span className="text-[10px] text-neutral-400 font-mono block">{selectedStation.district} • {selectedStation.risk_score_percentage}% Risk</span>
                 </div>
               </div>
               <button 
                 type="button"
-                className="px-2.5 py-1 bg-white text-black font-bold text-[10px] rounded-lg flex items-center space-x-1 flex-shrink-0 shadow"
+                className="px-3 py-1.5 bg-white text-black font-bold text-fluid-xs rounded-lg flex items-center space-x-1 flex-shrink-0 shadow min-h-[36px]"
               >
                 <span>Details</span>
-                <ChevronUp className="w-3 h-3" />
+                <ChevronUp className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
         )}
 
-        {/* Desktop Station Side Panel */}
+        {/* Desktop Station Side Panel (Shown on screens >= 1024px) */}
         {selectedStation && (
-          <div className="hidden lg:flex absolute top-4 right-4 bottom-4 z-[1000] w-80 glass-panel p-5 rounded-3xl flex-col justify-between text-xs overflow-y-auto shadow-2xl border border-neutral-800 transition-all">
+          <div className="hidden lg:flex absolute top-4 right-4 bottom-4 z-[1000] w-80 glass-panel p-5 rounded-3xl flex-col justify-between text-fluid-xs overflow-y-auto shadow-2xl border border-neutral-800 transition-all">
             <div>
               <div className="flex items-start justify-between pb-3 border-b border-neutral-800">
                 <div>
                   <span className="text-[10px] text-neutral-400 font-mono uppercase tracking-widest block">{selectedStation.state} &bull; {selectedStation.district}</span>
-                  <h3 className="text-base font-bold text-white tracking-tight mt-0.5">{selectedStation.name}</h3>
+                  <h3 className="text-fluid-lg font-bold text-white tracking-tight mt-0.5">{selectedStation.name}</h3>
                 </div>
                 <span className={`px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold tracking-wider ${
                   selectedStation.risk_level === 3 ? 'bg-red-500/20 border border-red-500/40 text-red-400' :
@@ -245,7 +250,7 @@ export default function LandslideHeatmap() {
                 </div>
               </div>
 
-              <div className="space-y-2 py-2 border-t border-b border-neutral-800 text-xs">
+              <div className="space-y-2 py-2 border-t border-b border-neutral-800 text-fluid-xs">
                 {[
                   { label: '24h Rain', val: `${selectedStation.current_rainfall_24h_mm} mm` },
                   { label: 'Slope Gradient', val: `${selectedStation.slope_deg}° steep` },
@@ -259,29 +264,33 @@ export default function LandslideHeatmap() {
                 ))}
               </div>
 
-              <div className="mt-4 p-3 rounded-2xl bg-black border border-neutral-800 text-[11px] leading-relaxed text-neutral-300">
+              <div className="mt-4 p-3 rounded-2xl bg-black border border-neutral-800 text-fluid-xs leading-relaxed text-neutral-300">
                 <strong className="text-white block text-[10px] uppercase font-mono tracking-wider mb-1">Direct Protocol:</strong>
                 {selectedStation.recommended_action}
               </div>
             </div>
 
             <div className="pt-3">
-              <button onClick={() => handleQuickSMS(selectedStation)} disabled={smsStatus === 'SENDING'} className="w-full py-2.5 bg-white text-black hover:bg-neutral-200 font-bold text-xs rounded-xl flex items-center justify-center space-x-2 transition-all shadow-lg">
-                <Send className="w-3.5 h-3.5 text-black" />
+              <button 
+                onClick={() => handleQuickSMS(selectedStation)} 
+                disabled={smsStatus === 'SENDING'} 
+                className="w-full py-3 min-h-[44px] bg-white text-black hover:bg-neutral-200 font-bold text-fluid-xs rounded-xl flex items-center justify-center space-x-2 transition-all shadow-lg active:scale-98"
+              >
+                <Send className="w-4 h-4 text-black" />
                 <span>{smsStatus === 'SENDING' ? 'Dispatching Twilio Gateway...' : smsStatus === 'SENT' ? 'SMS Broadcasted to Cell Towers' : 'Dispatch Emergency SMS Warning'}</span>
               </button>
             </div>
           </div>
         )}
 
-        {/* Mobile Station Bottom Sheet (Shown when opened on mobile) */}
+        {/* Mobile Station Bottom Sheet (Collapsible bottom overlay for phone viewports) */}
         {selectedStation && mobileDrawerOpen && (
-          <div className="lg:hidden absolute inset-x-2 bottom-2 z-[1001] max-h-[75vh] bg-black/95 backdrop-blur-2xl p-4 rounded-2xl flex flex-col justify-between text-xs overflow-y-auto shadow-2xl border border-neutral-700 animate-fade-in">
+          <div className="lg:hidden absolute inset-x-2 bottom-2 z-[1001] max-h-[75vh] bg-black/95 backdrop-blur-2xl p-4 rounded-2xl flex flex-col justify-between text-fluid-xs overflow-y-auto shadow-2xl border border-neutral-700 animate-fade-in">
             <div>
               <div className="flex items-start justify-between pb-2 border-b border-neutral-800">
                 <div className="truncate pr-2">
                   <span className="text-[9px] text-neutral-400 font-mono uppercase tracking-widest block">{selectedStation.state} • {selectedStation.district}</span>
-                  <h3 className="text-sm font-bold text-white tracking-tight truncate">{selectedStation.name}</h3>
+                  <h3 className="text-fluid-base font-bold text-white tracking-tight truncate">{selectedStation.name}</h3>
                 </div>
                 <div className="flex items-center space-x-2 flex-shrink-0">
                   <span className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold ${
@@ -291,7 +300,8 @@ export default function LandslideHeatmap() {
                   }`}>{selectedStation.risk_code}</span>
                   <button 
                     onClick={() => setMobileDrawerOpen(false)}
-                    className="p-1 rounded-lg bg-neutral-900 text-neutral-400 hover:text-white"
+                    className="p-2 rounded-lg bg-neutral-900 text-neutral-400 hover:text-white touch-target flex items-center justify-center"
+                    aria-label="Close station sheet"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -308,21 +318,21 @@ export default function LandslideHeatmap() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 py-2 border-t border-b border-neutral-800 text-[11px]">
+              <div className="grid grid-cols-2 gap-2 py-2 border-t border-b border-neutral-800 text-fluid-xs">
                 {[
                   { label: '24h Rain', val: `${selectedStation.current_rainfall_24h_mm} mm` },
                   { label: 'Slope', val: `${selectedStation.slope_deg}°` },
                   { label: 'Moisture', val: `${Math.round(selectedStation.soil_moisture * 100)}%` },
                   { label: 'Strata', val: selectedStation.soil_type }
                 ].map(({ label, val }) => (
-                  <div key={label} className="flex justify-between bg-neutral-950 p-1.5 rounded-lg border border-neutral-900">
+                  <div key={label} className="flex justify-between bg-neutral-950 p-2 rounded-lg border border-neutral-900">
                     <span className="text-neutral-400">{label}:</span>
                     <span className="text-white font-mono font-bold truncate">{val}</span>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-2.5 p-2.5 rounded-xl bg-neutral-950 border border-neutral-800 text-[11px] leading-relaxed text-neutral-300">
+              <div className="mt-2.5 p-2.5 rounded-xl bg-neutral-950 border border-neutral-800 text-fluid-xs leading-relaxed text-neutral-300">
                 <strong className="text-white block text-[9px] uppercase font-mono tracking-wider mb-0.5">Protocol:</strong>
                 {selectedStation.recommended_action}
               </div>
@@ -332,9 +342,9 @@ export default function LandslideHeatmap() {
               <button 
                 onClick={() => handleQuickSMS(selectedStation)} 
                 disabled={smsStatus === 'SENDING'} 
-                className="w-full py-2.5 bg-white text-black hover:bg-neutral-200 font-bold text-xs rounded-xl flex items-center justify-center space-x-2 transition-all shadow-lg active:scale-98"
+                className="w-full py-3 min-h-[44px] bg-white text-black hover:bg-neutral-200 font-bold text-fluid-xs rounded-xl flex items-center justify-center space-x-2 transition-all shadow-lg active:scale-98"
               >
-                <Send className="w-3.5 h-3.5 text-black" />
+                <Send className="w-4 h-4 text-black" />
                 <span>{smsStatus === 'SENDING' ? 'Dispatching...' : smsStatus === 'SENT' ? 'Dispatched to Towers' : 'Dispatch Emergency SMS Warning'}</span>
               </button>
             </div>
