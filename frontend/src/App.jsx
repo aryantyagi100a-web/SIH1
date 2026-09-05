@@ -27,11 +27,20 @@ function MainCommandCenter() {
   const ActiveComponent = TABS[activeTab] || LandslideHeatmap;
 
   return (
-    <div className="min-h-screen bg-[#0a0f1a] text-[#e2e8f0] flex flex-col font-['DM_Sans',sans-serif]">
+    <div className="min-h-screen min-h-[100dvh] bg-[#0a0f1a] text-[#e2e8f0] flex flex-col font-['DM_Sans',sans-serif] overflow-x-hidden">
       <TopAlertStrip />
-      <div className="flex flex-1 pt-7">
-        <SidebarNav activeTab={activeTab} setActiveTab={setActiveTab} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-        <main className={`flex-1 transition-all duration-300 px-4 py-4 ${isCollapsed ? 'ml-16' : 'ml-56'}`}>
+      <div className="flex flex-1 pt-7 md:pt-7">
+        <SidebarNav 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab} 
+          isCollapsed={isCollapsed} 
+          setIsCollapsed={setIsCollapsed} 
+        />
+        <main 
+          className={`flex-1 transition-all duration-300 w-full pt-12 md:pt-2 px-2 sm:px-4 md:px-6 pb-24 md:pb-6 ${
+            isCollapsed ? 'md:ml-16' : 'md:ml-56'
+          }`}
+        >
           <ActiveComponent />
         </main>
       </div>
@@ -40,3 +49,4 @@ function MainCommandCenter() {
 }
 
 export default () => <LanguageProvider><MainCommandCenter /></LanguageProvider>;
+

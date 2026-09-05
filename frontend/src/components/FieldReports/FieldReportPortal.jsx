@@ -57,15 +57,15 @@ export default function FieldReportPortal() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-fade-in py-2">
+    <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8 animate-fade-in py-1 sm:py-2">
       <div className="pb-4 border-b border-white/[0.06]">
-        <span className="text-[10px] text-[#64748b] font-mono uppercase tracking-widest block">GEO-TAGGED CROWDSOURCED & FIELD INTEL</span>
-        <h1 className="text-2xl font-bold tracking-tight text-[#e2e8f0] mt-1">{t.reportFormTitle}</h1>
-        <p className="text-xs text-[#64748b] mt-1">{t.reportFormSubtitle}</p>
+        <span className="text-[9px] sm:text-[10px] text-[#64748b] font-mono uppercase tracking-widest block">GEO-TAGGED CROWDSOURCED & FIELD INTEL</span>
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#e2e8f0] mt-1">{t.reportFormTitle}</h1>
+        <p className="text-[11px] sm:text-xs text-[#64748b] mt-1">{t.reportFormSubtitle}</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-5 glass-panel p-6 rounded-2xl border border-white/[0.06] space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
+        <div className="lg:col-span-5 glass-panel p-4 sm:p-6 rounded-2xl border border-white/[0.06] space-y-4">
           {submittedSuccess && (
             <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-lg text-xs font-mono flex items-center space-x-2">
               <CheckCircle className="w-4 h-4 flex-shrink-0" />
@@ -74,7 +74,7 @@ export default function FieldReportPortal() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-[#94a3b8] mb-1 font-medium">{t.reporterName}</label>
                 <input type="text" required value={formData.reporterName} onChange={(e) => setFormData({ ...formData, reporterName: e.target.value })} className={INP_CLS} />
@@ -85,7 +85,7 @@ export default function FieldReportPortal() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-[#94a3b8] mb-1 font-medium">{t.roleLabel}</label>
                 <select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} className={INP_CLS}>
@@ -107,15 +107,15 @@ export default function FieldReportPortal() {
 
             <div className="p-3 bg-[#070b14] rounded-lg border border-white/[0.06] space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] text-[#64748b] font-mono uppercase tracking-wider">GPS PIN</span>
-                <button type="button" onClick={handleGetLocation} className="px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.1] text-white rounded text-[10px] font-mono flex items-center space-x-1">
-                  <Navigation className="w-3 h-3" />
+                <span className="text-[10px] sm:text-[11px] text-[#64748b] font-mono uppercase tracking-wider">GPS PIN COORDINATES</span>
+                <button type="button" onClick={handleGetLocation} className="px-2.5 py-1 bg-white/[0.08] hover:bg-white/[0.15] text-white rounded text-[10px] font-mono flex items-center space-x-1 active:scale-95 transition-all">
+                  <Navigation className="w-3 h-3 text-emerald-400" />
                   <span>{geoLocating ? t.acquiringGps : t.autoGps}</span>
                 </button>
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-                <input type="text" value={formData.lat} onChange={(e) => setFormData({ ...formData, lat: e.target.value })} className="w-full bg-white/[0.04] border border-white/[0.06] rounded p-1.5 text-white" />
-                <input type="text" value={formData.lng} onChange={(e) => setFormData({ ...formData, lng: e.target.value })} className="w-full bg-white/[0.04] border border-white/[0.06] rounded p-1.5 text-white" />
+                <input type="text" value={formData.lat} onChange={(e) => setFormData({ ...formData, lat: e.target.value })} className="w-full bg-white/[0.04] border border-white/[0.06] rounded p-1.5 text-white" placeholder="Latitude" />
+                <input type="text" value={formData.lng} onChange={(e) => setFormData({ ...formData, lng: e.target.value })} className="w-full bg-white/[0.04] border border-white/[0.06] rounded p-1.5 text-white" placeholder="Longitude" />
               </div>
             </div>
 
@@ -137,8 +137,8 @@ export default function FieldReportPortal() {
               <textarea rows={2} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className={INP_CLS} />
             </div>
 
-            <button type="submit" className="w-full py-2.5 bg-white text-black hover:bg-neutral-200 font-semibold text-xs rounded-lg shadow-lg flex items-center justify-center space-x-1.5 transition-all">
-              <Send className="w-3.5 h-3.5" />
+            <button type="submit" className="w-full py-3 bg-white text-black hover:bg-neutral-200 font-bold text-xs rounded-lg shadow-lg flex items-center justify-center space-x-1.5 transition-all active:scale-98">
+              <Send className="w-3.5 h-3.5 text-black" />
               <span>{t.submitReport}</span>
             </button>
           </form>

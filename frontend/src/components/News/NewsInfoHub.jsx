@@ -179,51 +179,51 @@ export default function NewsInfoHub() {
   };
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto pb-12 animate-fade-in">
-      <div className="border-b border-neutral-800 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-5 sm:space-y-6 max-w-6xl mx-auto pb-8 sm:pb-12 animate-fade-in py-1">
+      <div className="border-b border-neutral-800 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div className="flex items-center space-x-3">
-          <div className="p-2.5 bg-neutral-900 border border-neutral-800 rounded-xl">
+          <div className="p-2 sm:p-2.5 bg-neutral-900 border border-neutral-800 rounded-xl flex-shrink-0">
             <Newspaper className="w-5 h-5 text-white" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight text-white">{t.newsTitle || 'Official News & Road Bulletins'}</h1>
-              <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-neutral-900 text-neutral-300 border border-neutral-700">AI SUMMARIZER ON</span>
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">{t.newsTitle || 'Official News & Road Bulletins'}</h1>
+              <span className="px-2 py-0.5 rounded text-[8px] sm:text-[9px] font-mono font-bold bg-neutral-900 text-neutral-300 border border-neutral-700 hidden sm:inline">AI ON</span>
             </div>
-            <p className="text-xs text-neutral-400 mt-0.5">{t.newsSubtitle || 'Verified updates from BRO, IMD, NDRF, and State Disaster Authorities.'}</p>
+            <p className="text-[11px] sm:text-xs text-neutral-400 mt-0.5">{t.newsSubtitle || 'Verified updates from BRO, IMD, NDRF, and State Disaster Authorities.'}</p>
           </div>
         </div>
 
-        <button onClick={() => setShowTool(!showTool)} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 border shadow-lg ${showTool ? 'bg-white text-black border-white' : 'bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border-neutral-700'}`}>
+        <button onClick={() => setShowTool(!showTool)} className={`w-full sm:w-auto px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-2 border shadow-lg active:scale-98 ${showTool ? 'bg-white text-black border-white' : 'bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border-neutral-700'}`}>
           <Sparkles className="w-3.5 h-3.5 text-amber-400" />
           <span>{showTool ? 'Close Custom Summarizer' : 'AI News Summarizer Tool'}</span>
         </button>
       </div>
 
-      <div className="glass-panel p-5 rounded-3xl border border-neutral-800 bg-neutral-950/90 shadow-2xl space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-neutral-800/80">
+      <div className="glass-panel p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-neutral-800 bg-neutral-950/90 shadow-2xl space-y-3.5 sm:space-y-4">
+        <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-neutral-800/80">
           <div className="flex items-center space-x-2">
-            <div className="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-amber-400" />
+            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center flex-shrink-0">
+              <Zap className="w-3.5 h-3.5 text-amber-400" />
             </div>
-            <h2 className="text-sm font-bold text-white tracking-tight flex items-center gap-2">AI 10-Second Regional Situation Digest</h2>
+            <h2 className="text-xs sm:text-sm font-bold text-white tracking-tight">AI Regional Situation Digest</h2>
           </div>
-          <button onClick={() => { setIsRefreshing(true); setTimeout(() => setIsRefreshing(false), 600); }} disabled={isRefreshing} className="flex items-center space-x-1.5 text-[11px] text-neutral-400 hover:text-white transition-colors bg-neutral-900 px-2.5 py-1 rounded-lg border border-neutral-800">
+          <button onClick={() => { setIsRefreshing(true); setTimeout(() => setIsRefreshing(false), 600); }} disabled={isRefreshing} className="flex items-center space-x-1.5 text-[10px] sm:text-[11px] text-neutral-400 hover:text-white transition-colors bg-neutral-900 px-2.5 py-1 rounded-lg border border-neutral-800 active:scale-95">
             <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin text-amber-400' : ''}`} />
-            <span>{isRefreshing ? 'Synthesizing...' : 'Refresh AI Digest'}</span>
+            <span>{isRefreshing ? 'Synthesizing...' : 'Refresh'}</span>
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 text-xs">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 sm:gap-3.5 text-xs">
           {[
             { icon: HardHat, color: 'text-amber-400', title: 'HIGHWAYS & PASSABILITY', desc: 'NH-10 (Sikkim) single-lane open. NH-306 (Mizoram) 30m subsidence clearing tomorrow. NH-40 fully open.' },
             { icon: CloudRain, color: 'text-blue-400', title: 'IMD PRECIPITATION SURGE', desc: 'Red Alert in East Khasi Hills (200mm/24h). Heavy rain in Kamrup & Barpeta. Arunachal downgraded to Yellow.' },
             { icon: Shield, color: 'text-red-400', title: 'SDRF & NDRF MOBILIZATION', desc: '3 NDRF teams in Mangan Town Hall (12 families sheltered). 8 tourists airlifted from Zuluk by IAF.' }
           ].map(({ icon: Icon, color, title, desc }) => (
-            <div key={title} className="bg-black/60 p-3.5 rounded-2xl border border-neutral-800/80 space-y-1">
-              <div className={`flex items-center space-x-1.5 ${color} font-bold font-mono text-[11px]`}>
-                <Icon className="w-3.5 h-3.5" />
-                <span>{title}</span>
+            <div key={title} className="bg-black/60 p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border border-neutral-800/80 space-y-1">
+              <div className={`flex items-center space-x-1.5 ${color} font-bold font-mono text-[10px] sm:text-[11px]`}>
+                <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+                <span className="truncate">{title}</span>
               </div>
               <p className="text-neutral-300 text-[11px] leading-relaxed">{desc}</p>
             </div>
@@ -232,34 +232,34 @@ export default function NewsInfoHub() {
       </div>
 
       {showTool && (
-        <div className="glass-panel p-6 rounded-3xl border border-neutral-800 bg-neutral-950 space-y-4 animate-fade-in shadow-2xl">
-          <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
+        <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-neutral-800 bg-neutral-950 space-y-3.5 sm:space-y-4 animate-fade-in shadow-2xl">
+          <div className="flex items-center justify-between border-b border-neutral-800 pb-2.5 sm:pb-3">
             <div className="flex items-center space-x-2">
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <h3 className="text-sm font-bold text-white">Custom Disaster Report & Article Summarizer</h3>
+              <Sparkles className="w-4 h-4 text-amber-400 flex-shrink-0" />
+              <h3 className="text-xs sm:text-sm font-bold text-white">Custom Article Summarizer</h3>
             </div>
-            <span className="text-[10px] text-neutral-500 font-mono">NLP Summarization Engine</span>
+            <span className="text-[9px] sm:text-[10px] text-neutral-500 font-mono">NLP Engine</span>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap text-[11px]">
-            <span className="text-neutral-500 font-mono">Try Quick Sample:</span>
+          <div className="flex items-center gap-1.5 flex-wrap text-[10px] sm:text-[11px]">
+            <span className="text-neutral-500 font-mono">Samples:</span>
             {SAMPLES.map((s, idx) => (
-              <button key={idx} onClick={() => { setCustomText(s.text); handleRunSummary(s.text); }} className="px-2.5 py-1 bg-neutral-900 hover:bg-neutral-800 text-neutral-300 border border-neutral-800 rounded-lg transition-colors truncate max-w-xs">
+              <button key={idx} onClick={() => { setCustomText(s.text); handleRunSummary(s.text); }} className="px-2 py-0.5 bg-neutral-900 hover:bg-neutral-800 text-neutral-300 border border-neutral-800 rounded-lg transition-colors truncate max-w-[140px] sm:max-w-xs">
                 {s.title}
               </button>
             ))}
           </div>
 
-          <textarea rows={3} placeholder="Paste any news report or BRO clearance notice..." value={customText} onChange={(e) => setCustomText(e.target.value)} className="w-full bg-neutral-900 border border-neutral-800 rounded-2xl p-3.5 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600 font-mono" />
+          <textarea rows={3} placeholder="Paste any news report or BRO clearance notice..." value={customText} onChange={(e) => setCustomText(e.target.value)} className="w-full bg-neutral-900 border border-neutral-800 rounded-xl sm:rounded-2xl p-3 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600 font-mono" />
           <div className="flex justify-end">
-            <button onClick={() => handleRunSummary(customText)} disabled={isSummarizing || !customText.trim()} className="px-4 py-2 bg-white text-black hover:bg-neutral-200 disabled:opacity-50 text-xs font-bold rounded-xl shadow-lg flex items-center space-x-1.5 transition-all">
+            <button onClick={() => handleRunSummary(customText)} disabled={isSummarizing || !customText.trim()} className="w-full sm:w-auto px-4 py-2.5 bg-white text-black hover:bg-neutral-200 disabled:opacity-50 text-xs font-bold rounded-xl shadow-lg flex items-center justify-center space-x-1.5 transition-all active:scale-98">
               <Sparkles className="w-3.5 h-3.5 text-black" />
               <span>{isSummarizing ? 'Analyzing...' : 'Generate AI Summary'}</span>
             </button>
           </div>
 
           {summaryResult && (
-            <div className="bg-black p-4 rounded-2xl border border-neutral-800 space-y-3 animate-fade-in">
+            <div className="bg-black p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-neutral-800 space-y-2.5 sm:space-y-3 animate-fade-in">
               <div className="flex items-center justify-between border-b border-neutral-800/80 pb-2">
                 <span className="text-xs font-bold text-white flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-emerald-400" /> AI Key Takeaways</span>
                 <button onClick={handleCopy} className="flex items-center space-x-1 text-[11px] text-neutral-400 hover:text-white">
@@ -275,13 +275,13 @@ export default function NewsInfoHub() {
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2">
-        <div className="flex items-center gap-1.5 flex-wrap">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-1">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
           {CATEGORIES.map((cat) => {
             const Icon = cat.icon;
             const isActive = activeCat === cat.id;
             return (
-              <button key={cat.id} onClick={() => setActiveCat(cat.id)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${isActive ? 'bg-white text-black border-white shadow-[0_0_12px_rgba(255,255,255,0.15)]' : 'bg-neutral-900/80 text-neutral-400 border-neutral-800 hover:text-white'}`}>
+              <button key={cat.id} onClick={() => setActiveCat(cat.id)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border whitespace-nowrap flex-shrink-0 active:scale-95 ${isActive ? 'bg-white text-black border-white shadow-[0_0_12px_rgba(255,255,255,0.15)]' : 'bg-neutral-900/80 text-neutral-400 border-neutral-800 hover:text-white'}`}>
                 <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-black' : 'text-neutral-500'}`} />
                 <span>{t[cat.label] || cat.fallback}</span>
               </button>
@@ -289,7 +289,7 @@ export default function NewsInfoHub() {
           })}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-end sm:self-auto">
           <Filter className="w-3.5 h-3.5 text-neutral-400" />
           <select value={stateFilter} onChange={(e) => setStateFilter(e.target.value)} className="bg-neutral-900 border border-neutral-800 text-xs text-white rounded-xl px-3 py-1.5 focus:outline-none">
             {NER_STATES.map(s => <option key={s} value={s} className="bg-black">{s}</option>)}
@@ -302,19 +302,19 @@ export default function NewsInfoHub() {
           const cfg = CAT_CFG[item.category] || CAT_CFG.road;
           const isExp = expandedId === item.id;
           return (
-            <article key={item.id} className="bg-black border border-neutral-800 rounded-2xl p-5 hover:border-neutral-700 transition-all space-y-3">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className={`text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded border ${cfg.bg} ${cfg.color} ${cfg.border}`}>{cfg.tag}</span>
-                <span className="text-[10px] font-mono text-neutral-400 flex items-center gap-1"><MapPin className="w-3 h-3" /> {item.state}</span>
-                <span className="text-[10px] font-mono text-neutral-500 flex items-center gap-1"><Clock className="w-3 h-3" /> {item.time}</span>
-                {item.verified && <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-0.5"><BadgeCheck className="w-3 h-3" /> Verified</span>}
+            <article key={item.id} className="bg-black border border-neutral-800 rounded-2xl p-4 sm:p-5 hover:border-neutral-700 transition-all space-y-2.5 sm:space-y-3">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                <span className={`text-[9px] sm:text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded border ${cfg.bg} ${cfg.color} ${cfg.border}`}>{cfg.tag}</span>
+                <span className="text-[9px] sm:text-[10px] font-mono text-neutral-400 flex items-center gap-1"><MapPin className="w-3 h-3" /> {item.state}</span>
+                <span className="text-[9px] sm:text-[10px] font-mono text-neutral-500 flex items-center gap-1"><Clock className="w-3 h-3" /> {item.time}</span>
+                {item.verified && <span className="text-[9px] sm:text-[10px] font-mono text-emerald-400 flex items-center gap-0.5"><BadgeCheck className="w-3 h-3" /> Verified</span>}
               </div>
 
-              <h3 className="text-sm font-bold text-white leading-snug">{item.title}</h3>
+              <h3 className="text-xs sm:text-sm font-bold text-white leading-snug">{item.title}</h3>
               <p className="text-xs text-neutral-400 leading-relaxed">{item.summary}</p>
 
               {isExp && (
-                <div className="p-3.5 bg-neutral-950 rounded-xl border border-neutral-800 space-y-2 text-xs animate-fade-in">
+                <div className="p-3 bg-neutral-950 rounded-xl border border-neutral-800 space-y-2 text-xs animate-fade-in">
                   <div className="flex items-center space-x-1.5 text-amber-400 font-bold font-mono text-[10px] uppercase">
                     <Sparkles className="w-3 h-3" />
                     <span>AI Key Takeaways:</span>
@@ -328,10 +328,10 @@ export default function NewsInfoHub() {
               )}
 
               <div className="flex items-center justify-between pt-2 border-t border-neutral-900 text-xs">
-                <span className="text-[10px] text-neutral-500 font-mono">{item.source}</span>
-                <button onClick={() => setExpandedId(isExp ? null : item.id)} className="text-[11px] text-amber-400 hover:text-amber-300 font-mono flex items-center gap-1">
+                <span className="text-[9px] sm:text-[10px] text-neutral-500 font-mono truncate max-w-[150px] sm:max-w-none">{item.source}</span>
+                <button onClick={() => setExpandedId(isExp ? null : item.id)} className="text-[10px] sm:text-[11px] text-amber-400 hover:text-amber-300 font-mono flex items-center gap-1 active:scale-95">
                   <Sparkles className="w-3 h-3" />
-                  <span>{isExp ? 'Hide AI Bullets' : '⚡ AI 3-Bullet Summary'}</span>
+                  <span>{isExp ? 'Hide Bullets' : '⚡ 3-Bullet Summary'}</span>
                   {isExp ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                 </button>
               </div>
@@ -341,10 +341,11 @@ export default function NewsInfoHub() {
       </div>
 
       <div className="border-t border-neutral-800 pt-4 mt-6">
-        <p className="text-[10px] text-neutral-500 font-mono text-center">
-          Sources: Ministry of Development of North Eastern Region (MDoNER) &bull; North Eastern Space Applications Centre (NESAC / ISRO) &bull; BRO &bull; IMD &bull; NDRF &bull; SDRF
+        <p className="text-[9px] sm:text-[10px] text-neutral-500 font-mono text-center">
+          Sources: Ministry of Development of North Eastern Region (MDoNER) • North Eastern Space Applications Centre (NESAC / ISRO) • BRO • IMD • NDRF • SDRF
         </p>
       </div>
     </div>
   );
 }
+

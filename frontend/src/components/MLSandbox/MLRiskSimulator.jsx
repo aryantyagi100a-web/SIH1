@@ -55,19 +55,19 @@ export default function MLRiskSimulator() {
       : 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400';
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-fade-in py-2">
-      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 pb-4 border-b border-white/[0.06]">
+    <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8 animate-fade-in py-1 sm:py-2">
+      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-3 pb-4 border-b border-white/[0.06]">
         <div>
-          <span className="text-[10px] text-[#64748b] font-mono uppercase tracking-widest block">AI LANDSLIDE SUSCEPTIBILITY ENGINE</span>
-          <h1 className="text-2xl font-bold tracking-tight text-[#e2e8f0] mt-1">{t.aiSandboxTitle}</h1>
-          <p className="text-xs text-[#64748b] mt-1">{t.aiSandboxSubtitle}</p>
+          <span className="text-[9px] sm:text-[10px] text-[#64748b] font-mono uppercase tracking-widest block">AI LANDSLIDE SUSCEPTIBILITY ENGINE</span>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#e2e8f0] mt-1">{t.aiSandboxTitle}</h1>
+          <p className="text-[11px] sm:text-xs text-[#64748b] mt-1">{t.aiSandboxSubtitle}</p>
         </div>
-        <div className="flex items-center space-x-1.5 text-xs">
+        <div className="flex items-center gap-1.5 flex-wrap text-xs">
           {PRESET_BTNS.map(({ key, label, cls }) => (
             <button
               key={key}
               onClick={() => setParams(PRESETS[key])}
-              className={`px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] border rounded-lg font-mono text-[11px] transition-all ${cls}`}
+              className={`px-2.5 sm:px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] border rounded-lg font-mono text-[10px] sm:text-[11px] transition-all ${cls}`}
             >
               {label}
             </button>
@@ -75,18 +75,18 @@ export default function MLRiskSimulator() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-7 space-y-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
+        <div className="lg:col-span-7 space-y-4 sm:space-y-5 bg-black/40 p-4 sm:p-6 rounded-2xl border border-white/[0.06]">
           {sliders.map(({ key, label, Icon, min, max, step, fmt, update, parse }) => {
             const parser = parse || parseFloat;
             return (
-              <div key={key} className="space-y-1.5">
+              <div key={key} className="space-y-1.5 py-0.5">
                 <div className="flex justify-between text-xs">
                   <span className="text-[#94a3b8] flex items-center font-medium">
-                    <Icon className="w-3.5 h-3.5 mr-1.5 text-[#64748b]" />
-                    {label}
+                    <Icon className="w-3.5 h-3.5 mr-1.5 text-[#64748b] flex-shrink-0" />
+                    <span>{label}</span>
                   </span>
-                  <span className="font-mono text-white">{fmt(params[key])}</span>
+                  <span className="font-mono text-white font-semibold">{fmt(params[key])}</span>
                 </div>
                 <input
                   type="range"
@@ -98,7 +98,7 @@ export default function MLRiskSimulator() {
                     const val = parser(e.target.value);
                     setParams(prev => ({ ...prev, ...(update ? update(val) : { [key]: val }) }));
                   }}
-                  className="w-full h-1 bg-white/10 rounded appearance-none cursor-pointer accent-white"
+                  className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white"
                 />
               </div>
             );
@@ -107,40 +107,41 @@ export default function MLRiskSimulator() {
           <button
             onClick={handlePredict}
             disabled={loading}
-            className="w-full py-3 bg-white text-black font-semibold text-xs rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:bg-neutral-200 flex items-center justify-center space-x-2 transition-all"
+            className="w-full py-3 bg-white text-black font-bold text-xs rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:bg-neutral-200 active:scale-98 flex items-center justify-center space-x-2 transition-all mt-3"
           >
             <Sparkles className="w-3.5 h-3.5 text-black" />
             <span>{loading ? 'Evaluating Random Forest Matrix...' : t.runAiButton}</span>
           </button>
         </div>
 
-        <div className="lg:col-span-5 glass-panel p-6 rounded-2xl border border-white/[0.06] flex flex-col justify-between space-y-6">
+        <div className="lg:col-span-5 glass-panel p-4 sm:p-6 rounded-2xl border border-white/[0.06] flex flex-col justify-between space-y-5">
           <div>
-            <span className="text-[10px] text-[#64748b] font-mono uppercase tracking-widest block">PREDICTED HAZARD PROBABILITY</span>
-            <div className="flex items-baseline space-x-3 mt-2">
-              <span className="text-5xl font-extrabold tracking-tight text-[#e2e8f0]">{prediction.risk_score_percentage}%</span>
+            <span className="text-[9px] sm:text-[10px] text-[#64748b] font-mono uppercase tracking-widest block">PREDICTED HAZARD PROBABILITY</span>
+            <div className="flex items-baseline space-x-3 mt-1 sm:mt-2">
+              <span className="text-4xl sm:text-5xl font-extrabold tracking-tight text-[#e2e8f0]">{prediction.risk_score_percentage}%</span>
               <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-wider border ${riskBadgeCls}`}>{prediction.risk_code}</span>
             </div>
 
-            <div className="mt-6 space-y-2">
-              <span className="text-[10px] font-mono text-[#64748b] uppercase tracking-wider block">{t.whyDanger}</span>
+            <div className="mt-4 sm:mt-6 space-y-2">
+              <span className="text-[9px] sm:text-[10px] font-mono text-[#64748b] uppercase tracking-wider block">{t.whyDanger}</span>
               <div className="space-y-1.5">
                 {prediction.factors_summary?.map((factor, idx) => (
                   <div key={idx} className="flex items-start space-x-2 text-xs text-[#cbd5e1]">
-                    <Check className="w-3.5 h-3.5 text-white flex-shrink-0 mt-0.5" />
-                    <span>{factor}</span>
+                    <Check className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                    <span className="leading-snug">{factor}</span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          <div className="p-3 bg-[#070b14]/60 rounded-xl border border-white/[0.04] text-[11px] text-[#94a3b8] leading-relaxed">
-            <strong className="text-white block text-[10px] uppercase font-mono tracking-wider mb-0.5">{t.whatToDo}</strong>
+          <div className="p-3 bg-[#070b14]/80 rounded-xl border border-white/[0.06] text-[11px] text-[#94a3b8] leading-relaxed">
+            <strong className="text-white block text-[9px] sm:text-[10px] uppercase font-mono tracking-wider mb-0.5">{t.whatToDo}</strong>
             {prediction.recommended_action}
           </div>
         </div>
       </div>
     </div>
   );
+
 }
