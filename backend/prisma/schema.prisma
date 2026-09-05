@@ -1,0 +1,91 @@
+// Prisma Schema for SIH 2026 NER Landslide Early Warning System
+// Supports PostgreSQL (Render) or SQLite for local development
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model MonitoringStation {
+  id                  String         @id @default(cuid())
+  stationId           String         @unique
+  name                String
+  state               String
+  district            String
+  latitude            Float
+  longitude           Float
+  elevationM          Float
+  slopeDeg            Float
+  soilType            String
+  lithologyCode       Int
+  baselineNdvi        Float
+  riskThresholdMm     Float
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  rainfallLogs        RainfallLog[]
+}
+
+model RainfallLog {
+  id            String             @id @default(cuid())
+  stationId     String
+  station       MonitoringStation  @relation(fields: [stationId], references: [id])
+  rainfall1h    Float
+  rainfall24h   Float
+  rainfall72h   Float
+  soilMoisture  Float
+  temperature   Float?
+  humidity      Float?
+  recordedAt    DateTime           @default(now())
+}
+
+model DisasterAlert {
+  id                String       @id @default(cuid())
+  alertCode         String       @unique
+  title             String
+  state             String
+  district          String
+  severity          String       // "YELLOW", "ORANGE", "RED"
+  riskScore         Float
+  message           String
+  targetAudience    String
+  status            String       @default("ACTIVE") // "ACTIVE", "RESOLVED"
+  smsBroadcastSent  Boolean      @default(false)
+  recipientCount    Int          @default(0)
+  issuedAt          DateTime     @default(now())
+  resolvedAt        DateTime?
+}
+
+model FieldReport {
+  id            String    @id @default(cuid())
+  reporterName  String
+  phone         String
+  role          String
+  locationName  String
+  state         String
+  district      String
+  latitude      Float
+  longitude     Float
+  hazardType    String    // "Tension Cracks", "Mudflow", "Rockfall", "Retaining Wall Failure"
+  severity      String    // "Low", "Medium", "High", "Critical"
+  description   String
+  photoUrl      String?
+  verified      Boolean   @default(false)
+  status        String    @default("PENDING_VERIFICATION")
+  submittedAt   DateTime  @default(now())
+  verifiedAt    DateTime?
+}
+
+model Subscriber {
+  id            String    @id @default(cuid())
+  fullName      String
+  phoneNumber   String    @unique
+  state         String
+  district      String
+  language      String    @default("English")
+  active        Boolean   @default(true)
+  subscribedAt  DateTime  @default(now())
+}
