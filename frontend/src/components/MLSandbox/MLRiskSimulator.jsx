@@ -1,0 +1,146 @@
+import React, { useState } from 'react';
+import { Sparkles, Mountain, CloudRain, Droplets, Layers, Trees, Check } from 'lucide-react';
+import { runMLPrediction } from '../../services/api';
+import { useLanguage } from '../../context/LanguageContext';
+
+const PRESETS = {
+  cloudburst: { slope_deg: 44.0, rainfall_24h_mm: 210.0, rainfall_72h_mm: 380.0, soil_moisture: 0.94, elevation_m: 1650, lithology_code: 5, ndvi: 0.38 },
+  moderate: { slope_deg: 32.0, rainfall_24h_mm: 75.0, rainfall_72h_mm: 140.0, soil_moisture: 0.62, elevation_m: 1100, lithology_code: 3, ndvi: 0.60 },
+  normal: { slope_deg: 20.0, rainfall_24h_mm: 25.0, rainfall_72h_mm: 45.0, soil_moisture: 0.35, elevation_m: 350, lithology_code: 2, ndvi: 0.75 }
+};
+
+const PRESET_BTNS = [
+  { key: 'cloudburst', label: '⛈️ Cloudburst', cls: 'text-[#ef4444] border-[#ef4444]/30' },
+  { key: 'moderate', label: '🌧️ Monsoon', cls: 'text-[#f59e0b] border-[#f59e0b]/30' },
+  { key: 'normal', label: '☀️ Clear', cls: 'text-emerald-400 border-emerald-500/30' }
+];
+
+export default function MLRiskSimulator() {
+  const { t } = useLanguage();
+  const [loading, setLoading] = useState(false);
+  const [params, setParams] = useState(PRESETS.moderate);
+  const [prediction, setPrediction] = useState({
+    risk_level: 2,
+    risk_code: 'HIGH',
+    risk_label: 'HIGH Warning',
+    risk_score_percentage: 74.2,
+    recommended_action: 'High rainfall is saturating soil pore pressure. Issue SMS advisory to hill-slope residents.',
+    factors_summary: [
+      'Heavy 24h Rain: 145 mm (High pore pressure)',
+      'Steep Slope Gradient: 38.5° (High gravitational pull)',
+      'Soil Wetness: 82% saturated',
+      'Soft fractured rock layer'
+    ]
+  });
+
+  const handlePredict = async () => {
+    setLoading(true);
+    const res = await runMLPrediction(params);
+    if (res?.prediction) setPrediction(res.prediction);
+    setLoading(false);
+  };
+
+  const sliders = [
+    { key: 'rainfall_24h_mm', label: t.sliderRain, Icon: CloudRain, min: 0, max: 350, step: 5, fmt: (v) => `${v} mm`, update: (v) => ({ rainfall_24h_mm: v, rainfall_72h_mm: v * 1.8 }) },
+    { key: 'slope_deg', label: t.sliderSlope, Icon: Mountain, min: 5, max: 58, step: 0.5, fmt: (v) => `${v}°` },
+    { key: 'soil_moisture', label: t.sliderWetness, Icon: Droplets, min: 0.1, max: 0.99, step: 0.02, fmt: (v) => `${Math.round(v * 100)}%` },
+    { key: 'lithology_code', label: t.sliderRock, Icon: Layers, min: 1, max: 5, step: 1, fmt: (v) => `Level ${v}`, parse: parseInt },
+    { key: 'ndvi', label: t.sliderTrees, Icon: Trees, min: 0.15, max: 0.85, step: 0.05, fmt: (v) => v }
+  ];
+
+  const riskBadgeCls = prediction.risk_level === 3 
+    ? 'bg-[#ef4444]/20 border-[#ef4444]/30 text-[#ef4444]' 
+    : prediction.risk_level === 2 
+      ? 'bg-[#f59e0b]/20 border-[#f59e0b]/30 text-[#f59e0b]' 
+      : 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400';
+
+  return (
+    <div className="max-w-6xl mx-auto space-y-8 animate-fade-in py-2">
+      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 pb-4 border-b border-white/[0.06]">
+        <div>
+          <span className="text-[10px] text-[#64748b] font-mono uppercase tracking-widest block">AI LANDSLIDE SUSCEPTIBILITY ENGINE</span>
+          <h1 className="text-2xl font-bold tracking-tight text-[#e2e8f0] mt-1">{t.aiSandboxTitle}</h1>
+          <p className="text-xs text-[#64748b] mt-1">{t.aiSandboxSubtitle}</p>
+        </div>
+        <div className="flex items-center space-x-1.5 text-xs">
+          {PRESET_BTNS.map(({ key, label, cls }) => (
+            <button
+              key={key}
+              onClick={() => setParams(PRESETS[key])}
+              className={`px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] border rounded-lg font-mono text-[11px] transition-all ${cls}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="lg:col-span-7 space-y-5">
+          {sliders.map(({ key, label, Icon, min, max, step, fmt, update, parse }) => {
+            const parser = parse || parseFloat;
+            return (
+              <div key={key} className="space-y-1.5">
+                <div className="flex justify-between text-xs">
+                  <span className="text-[#94a3b8] flex items-center font-medium">
+                    <Icon className="w-3.5 h-3.5 mr-1.5 text-[#64748b]" />
+                    {label}
+                  </span>
+                  <span className="font-mono text-white">{fmt(params[key])}</span>
+                </div>
+                <input
+                  type="range"
+                  min={min}
+                  max={max}
+                  step={step}
+                  value={params[key]}
+                  onChange={(e) => {
+                    const val = parser(e.target.value);
+                    setParams(prev => ({ ...prev, ...(update ? update(val) : { [key]: val }) }));
+                  }}
+                  className="w-full h-1 bg-white/10 rounded appearance-none cursor-pointer accent-white"
+                />
+              </div>
+            );
+          })}
+
+          <button
+            onClick={handlePredict}
+            disabled={loading}
+            className="w-full py-3 bg-white text-black font-semibold text-xs rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:bg-neutral-200 flex items-center justify-center space-x-2 transition-all"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-black" />
+            <span>{loading ? 'Evaluating Random Forest Matrix...' : t.runAiButton}</span>
+          </button>
+        </div>
+
+        <div className="lg:col-span-5 glass-panel p-6 rounded-2xl border border-white/[0.06] flex flex-col justify-between space-y-6">
+          <div>
+            <span className="text-[10px] text-[#64748b] font-mono uppercase tracking-widest block">PREDICTED HAZARD PROBABILITY</span>
+            <div className="flex items-baseline space-x-3 mt-2">
+              <span className="text-5xl font-extrabold tracking-tight text-[#e2e8f0]">{prediction.risk_score_percentage}%</span>
+              <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-wider border ${riskBadgeCls}`}>{prediction.risk_code}</span>
+            </div>
+
+            <div className="mt-6 space-y-2">
+              <span className="text-[10px] font-mono text-[#64748b] uppercase tracking-wider block">{t.whyDanger}</span>
+              <div className="space-y-1.5">
+                {prediction.factors_summary?.map((factor, idx) => (
+                  <div key={idx} className="flex items-start space-x-2 text-xs text-[#cbd5e1]">
+                    <Check className="w-3.5 h-3.5 text-white flex-shrink-0 mt-0.5" />
+                    <span>{factor}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="p-3 bg-[#070b14]/60 rounded-xl border border-white/[0.04] text-[11px] text-[#94a3b8] leading-relaxed">
+            <strong className="text-white block text-[10px] uppercase font-mono tracking-wider mb-0.5">{t.whatToDo}</strong>
+            {prediction.recommended_action}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
