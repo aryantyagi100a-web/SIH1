@@ -2,41 +2,52 @@ const axios = require('axios');
 const { getLiveRainfallSnapshot, estimateSoilMoisture } = require('./forecastService');
 const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000';
 
+const RISK_CODES = ['LOW', 'MODERATE', 'HIGH', 'SEVERE'];
+const RISK_LABELS = ['LOW (Normal)', 'MODERATE (Advisory - Yellow)', 'HIGH (Warning - Orange)', 'SEVERE (Immediate Evacuation - Red)'];
+const RISK_ACTIONS = [
+  'Normal conditions. Continuous automated monitoring active.',
+  '🟡 YELLOW ADVISORY: Moderate Susceptibility. Increase telemetry monitoring frequency.',
+  '⚠️ ORANGE ALERT: High Landslide Probability. Issue SMS advisory to hill-slope residents.',
+  '🚨 RED ALERT: Trigger Immediate Citizen Evacuation SMS. Mobilize SDRF/NDRF search & rescue.'
+];
+
+/**
+ * Rule-based risk scorer used when the Python ML service is offline.
+ * It uses the same rainfall/slope/moisture formula the synthetic training
+ * data was generated from, so the demo still reacts to rainfall changes
+ * even when the Random Forest service is not running.
+ */
+function scoreRiskFallback(features) {
+  const { slope_deg, rainfall_24h_mm, rainfall_72h_mm, soil_moisture, elevation_m, lithology_code, ndvi } = features;
+
+  const trigger = ((rainfall_24h_mm || 50) / 150.0) * 35.0 +
+                  ((rainfall_72h_mm || 100) / 350.0) * 20.0 +
+                  (Math.pow(soil_moisture || 0.5, 2)) * 25.0;
+
+  const terrain = ((slope_deg || 30) / 50.0) * 30.0 +
+                  ((lithology_code || 3) / 5.0) * 15.0 -
+                  ((ndvi || 0.5) * 15.0) +
+                  ((elevation_m || 1000) / 3000.0) * 5.0;
+
+  const combinedScore = Math.min(100, Math.max(5, Math.round(trigger + terrain)));
+  const riskLevel = combinedScore >= 75 ? 3 : combinedScore >= 55 ? 2 : combinedScore >= 35 ? 1 : 0;
+
+  return {
+    risk_level: riskLevel,
+    risk_code: RISK_CODES[riskLevel],
+    risk_label: RISK_LABELS[riskLevel],
+    risk_score_percentage: combinedScore,
+    confidence_probabilities: { Low: riskLevel === 0 ? 0.85 : 0.05, Moderate: riskLevel === 1 ? 0.75 : 0.15, High: riskLevel === 2 ? 0.78 : 0.12, Severe: riskLevel === 3 ? 0.88 : 0.04 },
+    recommended_action: RISK_ACTIONS[riskLevel],
+    factors_summary: [`Rainfall: ${rainfall_24h_mm} mm/24h`, `Slope: ${slope_deg}°`, `Soil Moisture Index: ${soil_moisture}`]
+  };
+}
+
 async function predictRisk(features) {
   try {
     return (await axios.post(`${ML_SERVICE_URL}/predict`, features, { timeout: 3000 })).data;
   } catch (err) {
-    const { slope_deg, rainfall_24h_mm, rainfall_72h_mm, soil_moisture, elevation_m, lithology_code, ndvi } = features;
-
-    const trigger = ((rainfall_24h_mm || 50) / 150.0) * 35.0 +
-                    ((rainfall_72h_mm || 100) / 350.0) * 20.0 +
-                    (Math.pow(soil_moisture || 0.5, 2)) * 25.0;
-
-    const terrain = ((slope_deg || 30) / 50.0) * 30.0 +
-                    ((lithology_code || 3) / 5.0) * 15.0 -
-                    ((ndvi || 0.5) * 15.0) +
-                    ((elevation_m || 1000) / 3000.0) * 5.0;
-
-    const combinedScore = Math.min(100, Math.max(5, Math.round(trigger + terrain)));
-    const riskLevel = combinedScore >= 75 ? 3 : combinedScore >= 55 ? 2 : combinedScore >= 35 ? 1 : 0;
-    const riskCodes = ['LOW', 'MODERATE', 'HIGH', 'SEVERE'];
-    const riskLabels = ['LOW (Normal)', 'MODERATE (Advisory - Yellow)', 'HIGH (Warning - Orange)', 'SEVERE (Immediate Evacuation - Red)'];
-    const actions = [
-      'Normal conditions. Continuous automated monitoring active.',
-      '🟡 YELLOW ADVISORY: Moderate Susceptibility. Increase telemetry monitoring frequency.',
-      '⚠️ ORANGE ALERT: High Landslide Probability. Issue SMS advisory to hill-slope residents.',
-      '🚨 RED ALERT: Trigger Immediate Citizen Evacuation SMS. Mobilize SDRF/NDRF search & rescue.'
-    ];
-
-    return {
-      risk_level: riskLevel,
-      risk_code: riskCodes[riskLevel],
-      risk_label: riskLabels[riskLevel],
-      risk_score_percentage: combinedScore,
-      confidence_probabilities: { Low: riskLevel === 0 ? 0.85 : 0.05, Moderate: riskLevel === 1 ? 0.75 : 0.15, High: riskLevel === 2 ? 0.78 : 0.12, Severe: riskLevel === 3 ? 0.88 : 0.04 },
-      recommended_action: actions[riskLevel],
-      factors_summary: [`Rainfall: ${rainfall_24h_mm} mm/24h`, `Slope: ${slope_deg}°`, `Soil Moisture Index: ${soil_moisture}`]
-    };
+    return scoreRiskFallback(features);
   }
 }
 
@@ -139,12 +150,26 @@ async function simulateHeatmap(multiplier) {
     return (await axios.get(`${ML_SERVICE_URL}/ner-risk-points?rainfall_multiplier=${multiplier}`, { timeout: 3000 })).data;
   } catch (err) {
     const { NER_STATIONS } = require('../data/seedData');
-    return {
-      region: 'North Eastern Region (NER) India',
-      station_count: NER_STATIONS.length,
-      data_source: 'SIMULATION',
-      rainfall_simulation_multiplier: multiplier,
-      stations: NER_STATIONS.map(st => ({
+
+    const stations = NER_STATIONS.map(st => {
+      // Same simulated-rainfall recipe as the ML service (/ner-risk-points),
+      // so the demo looks identical whether or not the Python service runs.
+      const sim24h = Math.min(350.0, Math.round(st.high_risk_threshold_mm * 0.45 * multiplier * 10) / 10);
+      const sim72h = Math.min(600.0, Math.round(sim24h * 1.85 * 10) / 10);
+      const moisture = Math.min(0.98, Math.max(0.20, Math.round((0.35 + (sim72h / 500.0) * 0.55) * 100) / 100));
+
+      // Recompute the risk from the simulated rain so the surge slider works.
+      const prediction = scoreRiskFallback({
+        slope_deg: st.slope_deg,
+        rainfall_24h_mm: sim24h,
+        rainfall_72h_mm: sim72h,
+        soil_moisture: moisture,
+        elevation_m: st.elevation_m,
+        lithology_code: st.lithology_code,
+        ndvi: st.baseline_ndvi
+      });
+
+      return {
         station_id: st.id,
         name: st.name,
         state: st.state,
@@ -154,18 +179,26 @@ async function simulateHeatmap(multiplier) {
         elevation_m: st.elevation_m,
         slope_deg: st.slope_deg,
         soil_type: st.soil_type,
-        current_rainfall_24h_mm: Math.round(st.live_rainfall_24h_mm * multiplier * 10) / 10,
-        current_rainfall_72h_mm: Math.round(st.live_rainfall_72h_mm * multiplier * 10) / 10,
-        rainfall_forecast_24h_mm: Math.round(st.live_rainfall_24h_mm * multiplier * 0.8 * 10) / 10,
-        soil_moisture: st.soil_moisture,
+        current_rainfall_24h_mm: sim24h,
+        current_rainfall_72h_mm: sim72h,
+        rainfall_forecast_24h_mm: Math.round(sim24h * 0.8 * 10) / 10,
+        soil_moisture: moisture,
         rainfall_provider: 'SIMULATION',
-        risk_level: st.risk_level,
-        risk_code: st.risk_code,
-        risk_label: `${st.risk_code} Risk Level`,
-        risk_score_percentage: st.risk_score,
-        color: COLOR_MAP[st.risk_level] || '#10B981',
-        recommended_action: st.risk_level >= 2 ? 'High Alert: Evacuation protocols on standby.' : 'Normal monitoring.'
-      }))
+        risk_level: prediction.risk_level,
+        risk_code: prediction.risk_code,
+        risk_label: prediction.risk_label,
+        risk_score_percentage: prediction.risk_score_percentage,
+        color: COLOR_MAP[prediction.risk_level] || '#10B981',
+        recommended_action: prediction.recommended_action
+      };
+    });
+
+    return {
+      region: 'North Eastern Region (NER) India',
+      station_count: stations.length,
+      data_source: 'SIMULATION',
+      rainfall_simulation_multiplier: multiplier,
+      stations
     };
   }
 }

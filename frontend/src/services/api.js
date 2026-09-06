@@ -18,6 +18,30 @@ const FALLBACK_STATIONS = [
   { station_id: "NER-TRIP-01", name: "Jampui Hills - North Tripura", state: "Tripura", district: "North Tripura", lat: 23.9500, lng: 92.2667, elevation_m: 930, slope_deg: 24.5, soil_type: "Sandy Clay Loam", current_rainfall_24h_mm: 40.0, current_rainfall_72h_mm: 82.0, soil_moisture: 0.42, risk_level: 0, risk_code: "LOW", risk_label: "LOW (Normal)", risk_score_percentage: 22.5, color: "#10B981", recommended_action: "🟢 GREEN (SAFE): Normal conditions." }
 ];
 
+// Offline demo fallback: scale the station's rain by the surge multiplier and
+// recompute a risk level, so the surge slider still drives the map even when
+// the backend (or the Python ML service) is not running.
+function simulateOfflineStation(station, multiplier) {
+  const rain24 = Math.round(station.current_rainfall_24h_mm * multiplier * 10) / 10;
+  const rain72 = Math.round(station.current_rainfall_72h_mm * multiplier * 10) / 10;
+  const score = Math.min(95, Math.round((rain24 / 150) * 45 + (station.slope_deg / 45) * 35));
+  const level = score > 75 ? 3 : score > 50 ? 2 : score > 30 ? 1 : 0;
+  const codes = ["LOW", "MODERATE", "HIGH", "SEVERE"];
+  const labels = ["LOW (Normal)", "MODERATE (Advisory - Yellow)", "HIGH (Warning - Orange)", "SEVERE (Immediate Evacuation - Red)"];
+  const colors = ["#10B981", "#F59E0B", "#F97316", "#EF4444"];
+  return {
+    ...station,
+    current_rainfall_24h_mm: rain24,
+    current_rainfall_72h_mm: rain72,
+    risk_level: level,
+    risk_code: codes[level],
+    risk_label: labels[level],
+    risk_score_percentage: score,
+    color: colors[level],
+    recommended_action: level >= 2 ? "⚠️ ORANGE ALERT: High Landslide Probability. Issue SMS advisory." : "Normal conditions. Continuous automated monitoring active."
+  };
+}
+
 export const fetchRiskHeatmap = async (mode = 'live', multiplier = 1.0) => {
   try {
     const params = mode === 'simulate' ? `mode=simulate&multiplier=${multiplier}` : 'mode=live';
@@ -29,7 +53,7 @@ export const fetchRiskHeatmap = async (mode = 'live', multiplier = 1.0) => {
       data_source: 'OFFLINE_SNAPSHOT',
       mode,
       stations: mode === 'simulate'
-        ? FALLBACK_STATIONS.map(s => ({ ...s, current_rainfall_24h_mm: Math.round(s.current_rainfall_24h_mm * multiplier * 10) / 10, current_rainfall_72h_mm: Math.round(s.current_rainfall_72h_mm * multiplier * 10) / 10 }))
+        ? FALLBACK_STATIONS.map(s => simulateOfflineStation(s, multiplier))
         : FALLBACK_STATIONS
     };
   }
