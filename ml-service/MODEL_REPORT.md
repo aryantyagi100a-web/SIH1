@@ -4,7 +4,7 @@
 
 This report explains how the AI model was trained, where the real data came from,
 how it compares against the old synthetic-only model, and what the honest
-limitations are. It was written for the SIH judges (and future teammates) to read.
+limitations are. 
 
 ---
 
